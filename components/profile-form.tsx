@@ -19,6 +19,7 @@ import React from 'react'
 import { Textarea } from './ui/textarea'
 import { updateUser } from '@/app/actions'
 import { stringToColor, invertColorForText } from '@/lib/utils'
+import { PromptBodyField, PromptNameField } from './prompt-fields';
 
 export default function ProfileForm({
   user,
@@ -108,58 +109,8 @@ export default function ProfileForm({
         />
         {prompts.map((prompt, index) => (
           <React.Fragment key={index}>
-            <FormField
-              control={form.control}
-              name={`prompt_name_${index}`}
-              render={({ field }) => (
-                <div className="flex">
-                  <FormItem className="flex-1 mb-4">
-                    <FormLabel>Prompt Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tech Guru" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Create a brief, descriptive title for your profile.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                  <FormItem className="ml-4">
-                    <FormLabel>Prompt Color</FormLabel>
-                    <FormDescription
-                      style={{
-                        backgroundColor: stringToColor(field.value),
-                        color: invertColorForText(stringToColor(field.value)),
-                        textAlign: 'center',
-                        margin: '1rem'
-                      }}
-                    >
-                      {stringToColor(field.value)}
-                    </FormDescription>
-                  </FormItem>
-                </div>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`prompt_body_${index}`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prompt Body</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="I'm a tech enthusiast who loves discussing the latest gadgets and AI trends."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Identify your unique perspective or a perspective you&apos;d
-                    like the AI to adopt. This helps the AI to tailor its
-                    responses to your interests.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <PromptNameField form={form} index={index} />
+            <PromptBodyField form={form} index={index} />
           </React.Fragment>
         ))}
         <Button type="submit" disabled={!isDirty || !isValid}>Submit</Button>
