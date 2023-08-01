@@ -19,7 +19,7 @@ import React from 'react'
 import { Textarea } from './ui/textarea'
 import { updateUser } from '@/app/actions'
 import { stringToColor, invertColorForText } from '@/lib/utils'
-import { PromptBodyField, PromptNameField } from './prompt-fields';
+import { PromptBodyField, PromptNameField } from './profile-form-fields'
 
 export default function ProfileForm({
   user,
@@ -28,6 +28,8 @@ export default function ProfileForm({
   user: any
   prompts: any[]
 }) {
+  const [numPrompts, setNumPrompts] = React.useState(prompts.length)
+
   let formSchema: z.ZodRawShape = {
     username: z
       .string()
@@ -60,7 +62,7 @@ export default function ProfileForm({
     mode: 'onChange',
     defaultValues
   })
-  const { isDirty, isValid } = form.formState;
+  const { isDirty, isValid } = form.formState
 
   async function onSubmit(values: z.infer<typeof finalFormSchema>) {
     try {
@@ -69,6 +71,22 @@ export default function ProfileForm({
     } catch (error) {
       console.error('Error Updating User:', error)
     }
+  }
+
+  function addPrompt() {
+    setNumPrompts(currentNumPrompts => {
+      const newNumberOfPrompts = currentNumPrompts + 1
+      formSchema = {
+        ...formSchema,
+        [`prompt_id_${newNumberOfPrompts}`]: z.number().nullable().optional(),
+        [`prompt_name_${newNumberOfPrompts}`]: z.string().optional(),
+        [`prompt_body_${newNumberOfPrompts}`]: z.string().optional()
+      }
+      defaultValues[`prompt_id_${newNumberOfPrompts}`] = null
+      defaultValues[`prompt_name_${newNumberOfPrompts}`] = null
+      defaultValues[`prompt_body_${newNumberOfPrompts}`] = null
+      return newNumberOfPrompts
+    })
   }
 
   return (
@@ -107,13 +125,21 @@ export default function ProfileForm({
             </FormItem>
           )}
         />
-        {prompts.map((prompt, index) => (
+        {[...Array(numPrompts)].map((_, index) => (
           <React.Fragment key={index}>
             <PromptNameField form={form} index={index} />
             <PromptBodyField form={form} index={index} />
           </React.Fragment>
         ))}
-        <Button type="submit" disabled={!isDirty || !isValid}>Submit</Button>
+        <div>
+          <Button variant="outline" onClick={addPrompt}>
+            {' '}
+            + Add Prompt
+          </Button>
+        </div>
+        <Button type="submit" disabled={!isDirty || !isValid}>
+          Submit
+        </Button>
       </form>
     </Form>
   )
