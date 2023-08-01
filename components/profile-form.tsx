@@ -43,17 +43,18 @@ export default function ProfileForm({
     email: user.user_metadata.email
   }
 
-  prompts.forEach((prompt, index) => {
+  for (let index = 0; index < numPrompts; index++) {
+    const prompt = prompts[index] || {}
     formSchema = {
       ...formSchema,
       [`prompt_id_${index}`]: z.number().nullable().optional(),
       [`prompt_name_${index}`]: z.string().optional(),
       [`prompt_body_${index}`]: z.string().optional()
     }
-    defaultValues[`prompt_id_${index}`] = prompt.id
-    defaultValues[`prompt_name_${index}`] = prompt.prompt_name
-    defaultValues[`prompt_body_${index}`] = prompt.prompt_body
-  })
+    defaultValues[`prompt_id_${index}`] = prompt.id || null
+    defaultValues[`prompt_name_${index}`] = prompt.prompt_name || null
+    defaultValues[`prompt_body_${index}`] = prompt.prompt_body || null
+  }
 
   const finalFormSchema = z.object(formSchema)
 
@@ -62,10 +63,12 @@ export default function ProfileForm({
     mode: 'onChange',
     defaultValues
   })
+
   const { isDirty, isValid } = form.formState
 
   async function onSubmit(values: z.infer<typeof finalFormSchema>) {
     try {
+      console.log('🔴 Submitting Form Values:', values)
       const result = await updateUser({ values, user })
       console.log('Update User Result:', result)
     } catch (error) {
@@ -74,19 +77,7 @@ export default function ProfileForm({
   }
 
   function addPrompt() {
-    setNumPrompts(currentNumPrompts => {
-      const newNumberOfPrompts = currentNumPrompts + 1
-      formSchema = {
-        ...formSchema,
-        [`prompt_id_${newNumberOfPrompts}`]: z.number().nullable().optional(),
-        [`prompt_name_${newNumberOfPrompts}`]: z.string().optional(),
-        [`prompt_body_${newNumberOfPrompts}`]: z.string().optional()
-      }
-      defaultValues[`prompt_id_${newNumberOfPrompts}`] = null
-      defaultValues[`prompt_name_${newNumberOfPrompts}`] = null
-      defaultValues[`prompt_body_${newNumberOfPrompts}`] = null
-      return newNumberOfPrompts
-    })
+    setNumPrompts(numPrompts + 1)
   }
 
   return (
