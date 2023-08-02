@@ -20,6 +20,7 @@ import { Textarea } from './ui/textarea'
 import { updateUser } from '@/app/actions'
 import { stringToColor, invertColorForText } from '@/lib/utils'
 import { PromptBodyField, PromptNameField } from './profile-form-fields'
+import { toast } from 'react-hot-toast';
 
 export default function ProfileForm({
   user,
@@ -67,14 +68,32 @@ export default function ProfileForm({
   const { isDirty, isValid } = form.formState
 
   async function onSubmit(values: z.infer<typeof finalFormSchema>) {
-    try {
-      console.log('🔴 Submitting Form Values:', values)
-      const result = await updateUser({ values, user })
-      console.log('Update User Result:', result)
-    } catch (error) {
-      console.error('Error Updating User:', error)
-    }
+    toast.promise(
+      updateUser({ values, user }),
+      {
+        loading: 'Saving...',
+        success: 'Profile Saved!',
+        error: 'Error Updating User.',
+      },
+      {
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+          fontSize: '14px',
+        },
+        iconTheme: {
+          primary: 'white',
+          secondary: 'black',
+        },
+      }
+    ).then(result => {
+      console.log('Update User Result:', result);
+    }).catch(error => {
+      console.error(error);
+    });
   }
+
 
   function addPrompt() {
     setNumPrompts(numPrompts + 1)
