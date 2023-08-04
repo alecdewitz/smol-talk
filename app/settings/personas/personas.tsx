@@ -32,7 +32,7 @@ export function Personas({ user, prompts }: { user: any; prompts: any[] }) {
     setEditPrompts(newPrompts)
   }
 
-  const isAddDisabled = editPrompts.some(
+  const isAddDisabled = editPrompts?.some(
     prompt => prompt.prompt_name === '' || prompt.prompt_body === ''
   )
 
