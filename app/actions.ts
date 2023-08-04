@@ -166,12 +166,10 @@ export async function getPrompts(user: User) {
     const { data, error } = await supabase
       .from('prompts')
       .select('id, prompt_name, prompt_body')
+      .order('created_at', { ascending: true })
       .eq('user_id', user.id)
 
-    const prompts: Prompt[] =
-      data && data.length > 0
-        ? data
-        : [{ id: null, prompt_name: '', prompt_body: '' }]
+    const prompts: Prompt[] | null = data
 
     return prompts
   } catch (error) {
@@ -183,9 +181,9 @@ export async function getPrompts(user: User) {
 }
 
 export type Prompt = {
-  id: number | null;
-  prompt_name: string;
-  prompt_body: string;
+  id: number | null
+  prompt_name: string
+  prompt_body: string
 }
 
 export type PromptGroups = {
@@ -193,6 +191,97 @@ export type PromptGroups = {
     id?: string
     name?: string
     body?: string
+  }
+}
+
+export async function createOrUpdatePersona({
+  values,
+  user
+}: {
+  values: { [x: string]: any }
+  user: User
+}) {
+  try {
+    // userData will update auth.users table
+    const personaData = {
+      prompt_id: values.prompt_id,
+      prompt_name: values.prompt_name,
+      prompt_body: values.prompt_body
+    }
+
+    const readOnlyRequestCookies = cookies()
+    const supabase = createServerActionClient<Database>({
+      cookies: () => readOnlyRequestCookies
+    })
+
+    let result
+
+    if (personaData.prompt_id) {
+      result = await supabase
+        .from('prompts')
+        .upsert({
+          user_id: user.id,
+          id: personaData.prompt_id || null,
+          prompt_name: personaData.prompt_name,
+          prompt_body: personaData.prompt_body
+        })
+        .select()
+    } else {
+      result = await supabase
+        .from('prompts')
+        .insert({
+          user_id: user.id,
+          prompt_name: personaData.prompt_name,
+          prompt_body: personaData.prompt_body
+        })
+        .eq('user_id', user.id)
+        .select()
+    }
+    const { data: personaResponse, error } = result
+
+    if (error) {
+      console.log('Error updating or adding persona:', error)
+    }
+
+    return {
+      data: {
+        prompts: personaResponse
+      }
+    }
+  } catch (error) {
+    console.log('update persona error', error)
+    return {
+      error: 'Unauthorized'
+    }
+  }
+}
+
+export async function removePersona({ id, user }: { id: string; user: User }) {
+  try {
+    const readOnlyRequestCookies = cookies()
+    const supabase = createServerActionClient<Database>({
+      cookies: () => readOnlyRequestCookies
+    })
+
+    const { data: personaResponse, error } = await supabase
+      .from('prompts')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.log('Error deleting persona:', error)
+    }
+
+    return {
+      data: {
+        prompts: personaResponse
+      }
+    }
+  } catch (error) {
+    console.log('remove persona error', error)
+    return {
+      error: 'Unauthorized'
+    }
   }
 }
 

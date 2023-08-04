@@ -1,9 +1,10 @@
 'use client'
 
-import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import * as z from 'zod'
 
+import { updateUser } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -15,22 +16,9 @@ import {
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import React from 'react'
-import { Textarea } from './ui/textarea'
-import { updateUser } from '@/app/actions'
-import { stringToColor, invertColorForText } from '@/lib/utils'
-import { PromptBodyField, PromptNameField } from './profile-form-fields'
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast'
 
-export default function ProfileForm({
-  user,
-  prompts
-}: {
-  user: any
-  prompts: any[]
-}) {
-  const [numPrompts, setNumPrompts] = React.useState(prompts.length)
-
+export default function ProfileForm({ user }: { user: any }) {
   let formSchema: z.ZodRawShape = {
     username: z
       .string()
@@ -44,19 +32,6 @@ export default function ProfileForm({
     email: user.user_metadata.email
   }
 
-  for (let index = 0; index < numPrompts; index++) {
-    const prompt = prompts[index] || {}
-    formSchema = {
-      ...formSchema,
-      [`prompt_id_${index}`]: z.number().nullable().optional(),
-      [`prompt_name_${index}`]: z.string().optional(),
-      [`prompt_body_${index}`]: z.string().optional()
-    }
-    defaultValues[`prompt_id_${index}`] = prompt.id || null
-    defaultValues[`prompt_name_${index}`] = prompt.prompt_name || null
-    defaultValues[`prompt_body_${index}`] = prompt.prompt_body || null
-  }
-
   const finalFormSchema = z.object(formSchema)
 
   const form = useForm<z.infer<typeof finalFormSchema>>({
@@ -68,35 +43,33 @@ export default function ProfileForm({
   const { isDirty, isValid } = form.formState
 
   async function onSubmit(values: z.infer<typeof finalFormSchema>) {
-    toast.promise(
-      updateUser({ values, user }),
-      {
-        loading: 'Saving...',
-        success: 'Profile Saved!',
-        error: 'Error Updating User.',
-      },
-      {
-        style: {
-          borderRadius: '10px',
-          background: '#333',
-          color: '#fff',
-          fontSize: '14px',
+    toast
+      .promise(
+        updateUser({ values, user }),
+        {
+          loading: 'Saving...',
+          success: 'Profile Saved!',
+          error: 'Error Updating User.'
         },
-        iconTheme: {
-          primary: 'white',
-          secondary: 'black',
-        },
-      }
-    ).then(result => {
-      console.log('Update User Result:', result);
-    }).catch(error => {
-      console.error(error);
-    });
-  }
-
-
-  function addPrompt() {
-    setNumPrompts(numPrompts + 1)
+        {
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+            fontSize: '14px'
+          },
+          iconTheme: {
+            primary: 'white',
+            secondary: 'black'
+          }
+        }
+      )
+      .then(result => {
+        console.log('Update User Result:', result)
+      })
+      .catch(error => {
+        console.error(error)
+      })
   }
 
   return (
@@ -113,11 +86,14 @@ export default function ProfileForm({
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input placeholder="smol-developer" {...field} />
+                <Input
+                  className="bg-gray-100 dark:bg-gray-800 select-none"
+                  readOnly={true}
+                  placeholder="smol-developer"
+                  {...field}
+                />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
+              <FormDescription>This is your account username.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -135,20 +111,8 @@ export default function ProfileForm({
             </FormItem>
           )}
         />
-        {[...Array(numPrompts)].map((_, index) => (
-          <React.Fragment key={index}>
-            <PromptNameField form={form} index={index} />
-            <PromptBodyField form={form} index={index} />
-          </React.Fragment>
-        ))}
-        <div>
-          <Button variant="outline" onClick={addPrompt}>
-            {' '}
-            + Add Prompt
-          </Button>
-        </div>
         <Button type="submit" disabled={!isDirty || !isValid}>
-          Submit
+          Save
         </Button>
       </form>
     </Form>
