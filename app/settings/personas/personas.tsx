@@ -12,7 +12,7 @@ type Prompts = {
 }[]
 
 export function Personas({ user, prompts }: { user: any; prompts: any[] }) {
-  const [editPrompts, setEditPrompts] = React.useState(prompts)
+  const [editPrompts, setEditPrompts] = React.useState(prompts || [])
 
   function addPrompt() {
     setEditPrompts([
@@ -39,7 +39,7 @@ export function Personas({ user, prompts }: { user: any; prompts: any[] }) {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        {editPrompts.map((prompt, index) => (
+        {editPrompts?.map((prompt, index) => (
           <PersonaForm
             key={prompt.id}
             prompt={prompt}
