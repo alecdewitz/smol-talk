@@ -27,7 +27,7 @@ function getUserInitials(name: string) {
 
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter()
-  const path = usePathname();
+  const path = usePathname()
 
   // Create a Supabase client configured to use cookies
   const supabase = createClientComponentClient()
@@ -68,10 +68,11 @@ export function UserMenu({ user }: UserMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent sideOffset={8} align="start" className="w-[180px]">
-          <DropdownMenuItem onClick={() => router.push('/profile')} className="flex-col items-start cursor-pointer">
-	          <div className="text-xs font-medium">
-	            Profile
-	          </div>
+          <DropdownMenuItem
+            onClick={() => router.push('/settings')}
+            className="flex-col items-start cursor-pointer"
+          >
+            <div className="text-xs font-medium">Settings</div>
           </DropdownMenuItem>
           <DropdownMenuItem className="flex-col items-start cursor-pointer">
             <div className="text-xs font-medium">
@@ -91,16 +92,23 @@ export function UserMenu({ user }: UserMenuProps) {
               <IconExternalLink className="w-3 h-3 ml-auto" />
             </a>
           </DropdownMenuItem> */}
-          <DropdownMenuItem onClick={signOut} className="text-xs text-red-300 cursor-pointer hover:bg-red-700">
+          <DropdownMenuItem
+            onClick={signOut}
+            className="text-xs text-red-300 cursor-pointer hover:bg-red-700"
+          >
             Log Out
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      {path === '/profile' &&
-        <Button variant={'default'} onClick={() => router.push('/')} className='flex flex-row items-center ml-4'>
-          <HomeIcon className='w-4 h-4 mr-2' /> Home
+      {path.includes('/settings') && (
+        <Button
+          variant={'default'}
+          onClick={() => router.push('/')}
+          className="flex flex-row items-center ml-4"
+        >
+          <HomeIcon className="w-4 h-4 mr-2" /> Home
         </Button>
-      }
+      )}
     </div>
   )
 }
