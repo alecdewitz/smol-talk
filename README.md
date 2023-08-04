@@ -37,11 +37,21 @@ Copy the `.env.example` file and populate the required env vars:
 cp .env.example .env
 ```
 
+Install Docker
+
 [Install the Supabase CLI](https://supabase.com/docs/guides/cli) and start the local Supabase stack:
 
 ```bash
-npm install supabase --save-dev
+pnpm install supabase --save-dev
 npx supabase start
+```
+
+Run migrations
+
+```bash
+npx supabase login
+npx supabase link --project-ref <project_ref_id>
+npx supabase db reset
 ```
 
 Install the local dependencies and start dev mode:
