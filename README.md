@@ -63,6 +63,12 @@ pnpm dev
 
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
 
+## Migrations and generating types
+
+```bash
+npx supabase gen types typescript --project-id "<project-ref>" --schema public > lib/db_types.ts
+```
+
 ## Authors
 
 This library is created by [Vercel](https://vercel.com) and [Next.js](https://nextjs.org) team members, with contributions from:

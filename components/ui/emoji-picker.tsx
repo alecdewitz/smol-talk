@@ -24,7 +24,6 @@ export function EmojiPicker({
     setIsOpen(false)
   }, [selectedEmoji])
 
-  console.log(selectedEmoji)
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
