@@ -165,11 +165,12 @@ export async function getPrompts(user: User) {
 
     const { data, error } = await supabase
       .from('prompts')
-      .select('id, prompt_name, prompt_body')
+      .select('id, prompt_name, prompt_body, emoji')
       .order('created_at', { ascending: true })
       .eq('user_id', user.id)
+      .is('deleted_at', null)
 
-    const prompts: Prompt[] | null = data
+    const prompts: Prompt[] = data || []
 
     return prompts
   } catch (error) {
@@ -184,6 +185,8 @@ export type Prompt = {
   id: number | null
   prompt_name: string
   prompt_body: string
+  emoji: string | null
+  deleted_at?: Date | null
 }
 
 export type PromptGroups = {
@@ -191,6 +194,7 @@ export type PromptGroups = {
     id?: string
     name?: string
     body?: string
+    emoji?: string
   }
 }
 
@@ -206,7 +210,8 @@ export async function createOrUpdatePersona({
     const personaData = {
       prompt_id: values.prompt_id,
       prompt_name: values.prompt_name,
-      prompt_body: values.prompt_body
+      prompt_body: values.prompt_body,
+      prompt_emoji: values.prompt_emoji
     }
 
     const readOnlyRequestCookies = cookies()
@@ -217,14 +222,17 @@ export async function createOrUpdatePersona({
     let result
 
     if (personaData.prompt_id) {
+      console.log('update persona', personaData)
       result = await supabase
         .from('prompts')
-        .upsert({
+        .update({
           user_id: user.id,
-          id: personaData.prompt_id || null,
           prompt_name: personaData.prompt_name,
-          prompt_body: personaData.prompt_body
+          prompt_body: personaData.prompt_body,
+          emoji: personaData.prompt_emoji
         })
+        .eq('id', personaData.prompt_id)
+        .is('deleted_at', null)
         .select()
     } else {
       result = await supabase
@@ -232,7 +240,8 @@ export async function createOrUpdatePersona({
         .insert({
           user_id: user.id,
           prompt_name: personaData.prompt_name,
-          prompt_body: personaData.prompt_body
+          prompt_body: personaData.prompt_body,
+          emoji: personaData.prompt_emoji
         })
         .eq('user_id', user.id)
         .select()
@@ -265,7 +274,7 @@ export async function removePersona({ id, user }: { id: string; user: User }) {
 
     const { data: personaResponse, error } = await supabase
       .from('prompts')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
 
     if (error) {
@@ -299,69 +308,6 @@ export async function updateUser({
       email: values.email
     }
 
-    // promptData will update public.prompts table
-    const promptData = Object.keys(values).reduce((result, key) => {
-      if (key.startsWith('prompt_')) {
-        result[key] = values[key]
-      }
-      return result
-    }, {} as { [key: string]: string })
-
-    // Un-flatten the prompt data
-    let promptGroups: PromptGroups = {}
-
-    for (let key in promptData) {
-      const [tempField, index] = key.split('_').slice(1)
-      const field: 'id' | 'name' | 'body' = tempField as 'id' | 'name' | 'body'
-
-      if (!promptGroups[index]) {
-        promptGroups[index] = {}
-      }
-
-      promptGroups[index][field] = promptData[key]
-    }
-    // console.log('promptGroups', promptGroups)
-    for (let index in promptGroups) {
-      let prompt = promptGroups[index]
-      if (prompt.id) {
-        const readOnlyRequestCookies = cookies()
-        const supabase = createServerActionClient<Database>({
-          cookies: () => readOnlyRequestCookies
-        })
-
-        const { data, error } = await supabase
-          .from('prompts')
-          .update({
-            prompt_name: prompt.name,
-            prompt_body: prompt.body
-          })
-          .eq('id', prompt.id)
-
-        if (error) {
-          console.log('Error updating prompt:', error)
-        } else {
-          console.log('Updated prompt:', data)
-        }
-      } else {
-        const readOnlyRequestCookies = cookies()
-        const supabase = createServerActionClient<Database>({
-          cookies: () => readOnlyRequestCookies
-        })
-
-        const { data, error } = await supabase.from('prompts').insert({
-          user_id: user.id,
-          prompt_name: prompt.name,
-          prompt_body: prompt.body
-        })
-
-        if (error) {
-          console.log('Error inserting prompt:', error)
-        } else {
-          console.log('Inserted prompt:', data)
-        }
-      }
-    }
-
     if (userData.email) {
       const readOnlyRequestCookies = cookies()
       const supabase = createServerActionClient<Database>({
@@ -388,8 +334,7 @@ export async function updateUser({
         user: {
           ...user,
           ...userData
-        },
-        prompts: promptData
+        }
       }
     }
   } catch (error) {

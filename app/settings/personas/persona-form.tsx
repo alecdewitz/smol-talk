@@ -38,14 +38,15 @@ export function PersonaForm({
   let formSchema: z.ZodRawShape = {
     prompt_id: z.coerce.number().optional(),
     prompt_name: z.string(),
-    prompt_body: z.string()
+    prompt_body: z.string(),
+    prompt_emoji: z.string().optional()
   }
 
   const defaultValues: any = {
     prompt_id: prompt.id || null,
     prompt_name: prompt.prompt_name || '',
     prompt_body: prompt.prompt_body || '',
-    prompt_emoji: prompt.prompt_emoji || '🤖'
+    prompt_emoji: prompt.emoji || '🤖'
   }
 
   const finalFormSchema = z.object(formSchema)
@@ -127,7 +128,9 @@ export function PersonaForm({
       <Card>
         <CardHeader className="flex flex-row justify-between space-y-0">
           <div className="space-y-2.5">
-            <CardTitle>{prompt.prompt_name}</CardTitle>
+            <CardTitle>
+              {prompt.emoji} {prompt.prompt_name}
+            </CardTitle>
             <CardDescription>{prompt.prompt_body}</CardDescription>
           </div>
           <Button variant={'outline'} type="button" onClick={onEdit}>
@@ -176,7 +179,9 @@ export function PersonaForm({
                     </Button>
                     <Button
                       type="submit"
-                      disabled={!isDirty || !isValid || isRemoving}
+                      disabled={
+                        !isDirty || !isValid || isRemoving || isSubmitting
+                      }
                       isLoading={isSubmitting}
                     >
                       Save

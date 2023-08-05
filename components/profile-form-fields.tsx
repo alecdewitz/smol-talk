@@ -10,7 +10,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { UseFormReturn } from 'react-hook-form'
 import { Textarea } from '@/components/ui/textarea'
-import { EmojiPicker } from '../app/settings/personas/emoji-picker'
+import { EmojiPicker } from './ui/emoji-picker'
 
 export function PromptNameField({ form }: { form: UseFormReturn }) {
   return (
