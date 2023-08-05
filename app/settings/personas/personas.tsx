@@ -12,7 +12,7 @@ type Prompts = {
 }[]
 
 export function Personas({ user, prompts }: { user: any; prompts: any[] }) {
-  const [editPrompts, setEditPrompts] = React.useState(prompts || [])
+  const [editPrompts, setEditPrompts] = React.useState(prompts)
 
   function addPrompt() {
     setEditPrompts([

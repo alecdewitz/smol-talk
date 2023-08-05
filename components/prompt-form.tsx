@@ -63,20 +63,8 @@ export function PromptForm({
                 router.refresh()
                 router.push('/')
               }} */}
-      <div className="relative flex flex-col-reverse w-full gap-2 overflow-hidden sm:flex-col grow bg-background sm:rounded-md sm:border sm:px-4">
-        <textarea
-          ref={inputRef}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          rows={/* calculate rows based on input lines */ Math.min(8, input.split('\n').length) }
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Send a message."
-          id="smol-inputbox"
-          spellCheck={false}
-          className="min-h-[60px] w-full resize-none bg-slate-100/10 sm:bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-        />
-        <div className="right-0 flex justify-center gap-2 sm:justify-normal sm:absolute top-4 sm:right-6">
+      <div className="relative flex flex-col w-full bg-background sm:rounded-md sm:border sm:px-4">
+        <div className="flex justify-center gap-2 sm:absolute top-4 right-6">
           <Button
             id="smol-submitbtn"
             type="submit"
@@ -87,8 +75,26 @@ export function PromptForm({
             <span className="sr-only">Send message</span>
           </Button>
 
-          <ModelSelector setModel={setModel} setInput={setInput} model={model} />
+          <ModelSelector
+            setModel={setModel}
+            setInput={setInput}
+            model={model}
+          />
         </div>
+        <textarea
+          ref={inputRef}
+          tabIndex={0}
+          onKeyDown={onKeyDown}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Send a message"
+          id="smol-inputbox"
+          spellCheck={false}
+          style={{ overflowY: 'hidden', resize: 'none' }}
+          className="min-h-[60px] w-full bg-slate-100/10 sm:bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+          onInput={e => (e.target.style.height = 'auto')}
+          onKeyUp={e => (e.target.style.height = e.target.scrollHeight + 'px')}
+        />
       </div>
     </form>
   )
